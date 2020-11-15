@@ -1,0 +1,70 @@
+---
+title: "TAE"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Leyendo Datos csv
+
+```{r}
+datos <- read.table("../datos_proscesados.csv",
+                    dec=".",sep=",", header=TRUE)
+```
+Los datos se ven así:
+
+```{r}
+head(datos)
+```
+## Filtro de datos
+Se omitiran las columnas: X,Y,OBJECTID,RADICADO,FECHA,DIRECCION_ENC,diseno,x_magnamed,y_magnamed
+shape, aux_b, aux_c
+```{r}
+library(dplyr)
+FiltroColumnas <-select(datos,LONGITUD,LATITUD,PERIODO,MES,DIA,HORA,CLASE,DIRECCION,CBML,TIPO_GEOCOD,GRAVEDAD,BARRIO,COMUNA)
+FiltroColumnas
+
+```
+
+## Organizar año, mes y dia en una sola fecha
+
+```{r}
+library(OneR)
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+
+# <- data.frame(x = rnorm(10, 30, .2), y = runif(10, 3, 5))
+#scaled.dat <- scale(dat)
+data<-FiltroColumnas
+
+data$MES<- range01(data$MES)
+data$PERIODO<- range01(data$PERIODO)
+
+testFrame<-data$CLASE
+testFrame<-as.data.frame(testFrame)
+data$CLASE2<-NULL
+categoriasSinRepetir<-testFrame %>% distinct(testFrame, .keep_all=TRUE)
+categoriasSinRepetir=as.vector(categoriasSinRepetir)
+print(class(categoriasSinRepetir))
+vector_categorias=unlist(categoriasSinRepetir)
+
+#data$CLASE2 = factor(data$CLASE, levels = categoriasSinRepetir)
+#data$CLASE <- as.integer(data$CLASE2)
+#E <- match(data$CLASE, categorias)
+data$CLASE2 <- match(data$CLASE, vector_categorias)
+data$CLASE<-range01(data$CLASE2)
+
+
+dataFiltrado <-select(data,PERIODO,MES,DIA,CLASE,BARRIO)
+model <- OneR(dataFiltrado, verbose = TRUE)
+
+```
+```{r}
+
+
+
+```
+
+
+

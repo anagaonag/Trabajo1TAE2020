@@ -1,0 +1,8 @@
+# Clustering
+
+Caracteristicas
+
+
+Promedio de accidentes mensual
+promedio de accidentes anual
+conteo de accidentes

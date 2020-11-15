@@ -1,0 +1,53 @@
+---
+title: "abrir mapas"
+author: "Jorge"
+date: "4/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+
+
+
+
+```{r}
+library(sf)
+cc <- st_read("mapas/Barrio_Vereda.shp") # use this code to add your shapefile from your local directory
+leaflet(width = "100%")%>% addTiles(attribution = "overlay data© mapsnigeriainitiative 2016")%>% setView(-75.60272578, 6.21901553, 11) %>%  # add the default basemap along with setting the view (lng, lat) and initial zoom 
+   addPolygons(data = cc, fill=TRUE, stroke = TRUE, color = "red", popup = paste0("Name:",cc$NOMBRE,"<br>", "Pop:", cc$total))
+
+```
+
+
+```{r}
+# Ejemplo marcador
+library(leaflet)
+m <- leaflet() %>%
+  addTiles() %>%  # Añade por defecto los Tiles de  OpenStreetMap
+  addMarkers(lng=-5.664112384, lat=40.96500844, popup="Plaza Mayor de Salamanca")
+m  # Imprime el mapa
+1
+2
+3
+4
+5
+6
+# Ejemplo marcador
+library(leaflet)
+m <- leaflet() %>%
+  addTiles() %>%  # Añade por defecto los Tiles de  OpenStreetMap
+  addMarkers(lng=-75.60272578, lat=6.21901553, popup="Plaza Mayor de Salamanca")
+m  # Imprime el mapa
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

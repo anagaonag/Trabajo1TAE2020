@@ -1,0 +1,52 @@
+---
+title: "TAE"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Leyendo Datos csv
+
+```{r}
+datos <- read.table("datos_proscesados.csv",
+                    dec=".",sep=",", header=TRUE)
+head(datos)
+
+```
+Los datos se ven así:
+
+```{r}
+library(dplyr)
+barrios <- distinct(datos,BARRIO)
+barrios<-unlist(barrios,use.names = FALSE)
+barrios <- as.vector(barrios)
+
+
+taccidente <- distinct(datos,CLASE)
+taccidente <- unlist(t(taccidente),use.names = FALSE)
+taccidente <- as.vector(taccidente)
+
+matri_convertir <- select(datos,DIA,MES,PERIODO,BARRIO,CLASE)
+head(matri_convertir)
+
+
+
+#BARRIO = barrios
+CLASE = taccidente
+df = matri_convertir
+matrix_tiposBinaria<-cbind(with(df, model.matrix(~CLASE+ 0)))
+#matrix_tiposBinaria=model.matrix(~ CLASE,df)
+
+matrix_guardar <- select(df,DIA,MES,PERIODO,BARRIO)
+matrix_guardar<-cbind(matrix_guardar,matrix_tiposBinaria)
+
+
+#da=cbind(with(df, model.matrix(~ BARRIO+ 0)))
+#da=model.matrix(~ BARRIO+CLASE,data=df)
+
+write.csv(matrix_guardar,"datosParaRed.csv", row.names = FALSE)
+
+
+```

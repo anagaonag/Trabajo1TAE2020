@@ -1,0 +1,22 @@
+---
+title: "Neural network"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+```{r}
+datosbruto <- read.table("../datosParaRed.csv",
+                    dec=".",sep=",", header=TRUE)
+
+datosbruto
+#datoscuenta <- group_by(datosbruto,DIA,MES,PERIODO,BARRIO,CLASEatropello) %>% count(CLASEatropello,CLASEcaida.ocupante)
+
+
+matrix_guardar <- datosbruto %>% 
+  group_by(DIA,MES,PERIODO,BARRIO) %>% 
+  summarise(TotalAtropello = sum(CLASEatropello),TotalCaidaOcupante = sum(CLASEcaida.ocupante),TotalAChoque = sum(CLASEchoque),Totalchoque.y.atropello = sum(CLASEchoque.y.atropello),TotalIncendio = sum(CLASEincendio),TotalOtro = sum(CLASEotro),TotalVolcamiento = sum(CLASEvolcamiento))
+write.csv(matrix_guardar,"datosmelos.csv", row.names = FALSE)
+```
+

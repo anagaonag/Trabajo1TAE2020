@@ -1,0 +1,12 @@
+name: Accidentapp
+title: Accidentapp
+username:
+account: anorpe
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3196730
+bundleId: 3839289
+url: https://anorpe.shinyapps.io/Accidentapp/
+when: 1604956079.34422
+asMultiple: FALSE
+asStatic: FALSE

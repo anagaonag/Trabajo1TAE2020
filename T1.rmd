@@ -7,6 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ## Leyendo Datos csv
 
 ```{r}
@@ -27,97 +28,49 @@ FiltroColumnas <-select(datos,LONGITUD,LATITUD,PERIODO,MES,DIA,HORA,CLASE,DIRECC
 FiltroColumnas
 ```
 
-## Organizar año, mes y dia en una sola fecha
-
+# Organizacion data
+- Se genera semilla,generan datos de entrenamiento y validacion.  
 ```{r}
-fechas<-apply(cbind(FiltroColumnas$PERIODO,FiltroColumnas$MES,FiltroColumnas$DIA),1,paste,collapse="-")
-fechas<-as.Date(fechas,"%Y-%m-%d")
+library(caret)
+
+set.seed(2020)
+DatosEntrenamiento  <- filter(FiltroColumnas,PERIODO <=2017)
+DatosValidacion <- filter(FiltroColumnas,PERIODO == 2018)
+
+DataEntrenamiento <- group_by(DatosEntrenamiento,PERIODO,MES,DIA,BARRIO) %>% count(CLASE)
+names(DataEntrenamiento)[names(DataEntrenamiento) == 'n'] <- 'CantidadAccidentesPorTipo'
+altavista <- filter(DataEntrenamiento,BARRIO=='altavista',CLASE=='atropello')
+dataCluster <- group_by(altavista,PERIODO,MES) %>% count(CantidadAccidentesPorTipo)
+
+altvalidation <- filter(DatosValidacion,BARRIO=='altavista',CLASE=='atropello')
+Datavalidation <- group_by(altvalidation,PERIODO,MES) %>% count(CLASE)
+Datavalidation <- select(Datavalidation,PERIODO,MES,n)
+Datavalidation
+dt <-  select(dataCluster,PERIODO,MES,n)
 
 ```
-## Anexamos esta nueva columna a la data
 ```{r}
-FiltroColumnas$FullFecha <- fechas
+ctrl<-trainControl(method = "CV",number =5)
+modelo_entrenamiento<-train(n ~ PERIODO+MES,
+             data       = dt,
+             method     = "knn",
+             preProcess = c("center","scale"),
+             tuneGrid   = expand.grid(k = 1:12),
+             trControl  = ctrl,
+             metric     = "RMSE")
 ```
-## Agrupar por año
-```{r}
-Data <- group_by(FiltroColumnas,FullFecha) %>% count(CLASE)
-serie6 <- group_by(FiltroColumnas,FullFecha) %>% count(FullFecha)
-names(serie6)[names(serie6) == 'n'] <- 'CantidadAccidentesPorFecha'
-names(Data)[names(Data) == 'n'] <- 'CantidadAccidentesPorTipo'
-serie6
 
-```
-## Sacando las 6 series de tiempo
-```{r}
-serie1 <- filter(Data,CLASE=='atropello')
-serie2 <- filter(Data,CLASE=='caida ocupante')
-serie3 <- filter(Data,CLASE=='choque')
-serie4 <- filter(Data,CLASE=='otro')
-serie5 <- filter(Data,CLASE=='volcamiento')
-
-serie1
-
-```
-##Graficnado las series de tiempo
-```{r}
-library(tseries)
-library(ggfortify)
-#Falta organizar que las graficas queden en una sola.
-
-Atropello<-ts(serie1$CantidadAccidentesPorTipo, start = c(2014,1), end=c(2019,1),frequency = 12)
-autoplot(Atropello, ts.colour = "red",cpt.linetype = "solid")
-
-CaidaOcupante<-ts(serie2$CantidadAccidentesPorTipo, start = c(2014,1), end=c(2019,1),frequency = 12)
-autoplot(CaidaOcupante, ts.colour = "blue", cpt.linetype = "solid")
-
-choque<-ts(serie3$CantidadAccidentesPorTipo, start = c(2014,1), end=c(2019,1),frequency = 12)
-autoplot(choque, ts.colour = "purple", cpt.linetype = "solid")
-
-otro<-ts(serie4$CantidadAccidentesPorTipo, start = c(2014,1), end=c(2019,1),frequency = 12)
-autoplot(otro, ts.colour = "blue", cpt.linetype = "solid")
-
-volcamiento<-ts(serie5$CantidadAccidentesPorTipo, start = c(2014,1), end=c(2019,1),frequency = 12)
-autoplot(volcamiento, ts.colour = "blue", cpt.linetype = "solid")
-
-ggrafica6<-ts(serie6$CantidadAccidentesPorFecha, start = c(2014,1), end=c(2019,1),frequency = 12)
-autoplot(ggrafica6, ts.colour = "blue", cpt.linetype = "solid")
-
-
-
-```
-## ACtividades faltandes:
-- analsis exploratorio.
-- graficar accidentes por barrio, comuna
-- Dividir la data (entrenaiento,test).
-- Crear modelos.(knn)
-
-## 31/10/2020 
- - Series de tiempo de cada barrio agrupan mes ceuntan cada tipo de atropello.
- - Cluesterizacion con esas series, predicion por barrio.
- - Modelos:
-  * Dia 
-  * Año
-  * Mes
-Entrada: (ventana de tiempo: historico accidentes; prediccion: accidentalidad por tipo de accidente, ventana temporal(rango fechas), resolucion temporal (dia,semana,mes);grupos de barrio en mapa.(colores diferentes.) )
- 
 
 ```{r}
-dataCluster <- group_by(FiltroColumnas,FullFecha,BARRIO) %>% count(CLASE)
-names(dataCluster)[names(dataCluster) == 'n'] <- 'CantidadAccidentesPorFecha'
-dataCluster
+barrios <- distinct(datos,BARRIO)
+taccidente <- distinct(datos,CLASE)
+for(i in barrios){
+  for(j in taccidente){
+    print(paste(i,j))
+    }
+}
+datos<-cbind(datos,casa)
 ```
-# Actividades:
-## Referencia: http://r-es.org/9jornadasR/pdf/9JUR_paper_24.pdf
-- Series de los barrios:Ana
-- Dia: Tacho: (cluster)
-- semana: (Jorge)
-- Mes: (Andres)
-
-(regresion lineal, cbm, red neuronal)
-- Predictivo(dia)
-- Predictivo(semana)
-- Predictivo(mes)
-
 
 
 
