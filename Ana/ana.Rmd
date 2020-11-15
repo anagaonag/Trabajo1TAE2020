@@ -1,0 +1,140 @@
+---
+title: "Descriptiva"
+author: "Ana Gaona"
+date: "9/11/2020"
+output: html_document
+---
+```{r}
+library("plotly")
+library("ggplot2")
+library("tidyr")
+library("readr")
+library("tibble")
+library("dplyr") 
+library("tidyverse")
+library("gridExtra")
+
+```
+
+```{r}
+datos <- read.csv("C:/Users/ANA GAONA/OneDrive/Escritorio/Trabajo1TAE2020/datos_proscesados.csv")
+```
+
+# vISTA DE LOS DATOS
+```{r}
+datos$BARRIO <- as.factor(as.character(datos$BARRIO))
+datos$COMUNA <- as.factor(as.character(datos$COMUNA))
+#datos$GRAVEDAD <- as.factor(as.character(datos$GRAVEDAD))
+datos$TIPO_GEOCOD <- as.factor(as.character(datos$TIPO_GEOCOD))
+datos$DIA_NOMBRE <- as.factor(as.character(datos$DIA_NOMBRE))
+datos$MES_NOMBRE <- as.factor(as.character(datos$MES_NOMBRE))
+datos$DISENO <- as.factor(as.character(datos$DISENO))
+datos$AUX_B <- as.factor(as.character(datos$AUX_B))
+datos$AUX_C <- as.factor(as.character(datos$AUX_C))
+datos$DIRECCION_ENC <- as.factor(as.character(datos$DIRECCION_ENC))
+datos$DIRECCION <- as.factor(as.character(datos$DIRECCION))
+datos$HORA <- as.factor(as.character(datos$HORA))
+datos$FECHA <- as.factor(as.character(datos$FECHA))
+datos$GRAVEDAD <- as.character(as.factor(datos$GRAVEDAD))
+summary(datos)
+```
+# ANÁLISIS GRÁFICO DE LA ACCIDENTALIDAD:
+
+```{r}
+
+plot(datos$PERIODO,datos$GRAVEDAD)
+```
+
+```{r}
+plot(datos$DIA_NOMBRE,datos$GRAVEDAD)
+``` 
+
+```{r}
+install.packages("stx","zoo","TTR")
+library(plotly)
+library(quantmod)
+
+``` 
+```{r}
+df<-data.frame(Date=index(datos),coredata(datos))
+df<-tail(df,10000)
+df$GRAVEDAD<-seq.int(nrow(df))
+
+accumulate_by<-function(dat,var){
+  var<-lazyeval::f_eval(var,dat)
+  lvls <- plotly:::getLevels(var)
+  dats <- lapply(seq_along(lvls), function(x) {
+    cbind(dat[var %in% lvls[seq(1, x)], ], frame = lvls[[x]])
+  })
+  dplyr::bind_rows(dats)
+}
+
+df <- df %>% accumulate_by(~CLASE)
+fig <- df %>% plot_ly(
+  x = ~GRAVEDAD, 
+  y = ~MES_NOMBRE, 
+  frame = ~frame,
+  type = 'scatter', 
+  mode = 'lines', 
+  fill = 'tozeroy', 
+  fillcolor='rgba(114, 186, 59, 0.5)',
+  line = list(color = 'rgb(114, 186, 59)'),
+  text = ~paste("CLASE:","<br>MES"), 
+  hoverinfo = 'text'
+)
+fig <- fig %>% layout(
+  title = "PROMEDIO POR CLASE DE ACCIDENTE",
+  yaxis = list(
+    title = "", 
+    range = c(0,200), 
+    zeroline = F,
+    tickprefix = ""
+  ),
+  xaxis = list(
+    title = "CLASE", 
+    range = c(0,251), 
+    zeroline = F, 
+    showgrid = F
+  )
+) 
+fig <- fig %>% animation_opts(
+  frame = 2, 
+  transition = 0.002, 
+  redraw = FALSE
+)
+fig <- fig %>% animation_slider(
+  currentvalue = list(
+    prefix = "CLASE: "
+  )
+)
+
+fig
+
+```
+```{r}
+datos%>%ggplot(aes(y=GRAVEDAD, x=DIA_NOMBRE, fill=GRAVEDAD))+geom_bar(stat = "identity")
+```
+```{r}
+datos%>%ggplot(aes(y=CLASE, x=DIA_NOMBRE, fill=CLASE))+geom_bar(stat = "identity")
+
+```  
+```{r}
+datos%>%ggplot(aes(y=CLASE, x=MES_NOMBRE, fill=CLASE))+geom_bar(stat = "identity")
+
+```  
+```{r}
+datos%>%ggplot(aes(y=GRAVEDAD, x=MES_NOMBRE, fill=GRAVEDAD))+geom_bar(stat = "identity")
+
+```
+
+```{r}
+a<-datos%>%ggplot(aes(x=CLASE))+geom_histogram(alpha=.5,fill="dark blue")+geom_count(stat="count")
+
+b<-datos%>%ggplot(aes(x=(GRAVEDAD),fill=DIA_NOMBRE))+geom_density(alpha=.5)+facet_wrap(~DIA_NOMBRE)+geom_count(stat="count")
+plot(b)
+
+C<-datos%>%ggplot(aes(x=(GRAVEDAD),fill=MES_NOMBRE))+geom_density(alpha=.5)+facet_wrap(~MES_NOMBRE)+geom_count(stat="count")
+plot(C)
+
+
+```
